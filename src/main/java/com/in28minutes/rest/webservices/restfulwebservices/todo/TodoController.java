@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 public class TodoController {
@@ -38,11 +39,18 @@ public class TodoController {
     }
 
     @PostMapping("/users/{username}/todos")
-    public Todo createTodo(@PathVariable String username,
+    public ResponseEntity<Todo> createTodo(@PathVariable String username,
                            @RequestBody Todo todo) {
-        return todoService.addTodo(username,
+        Todo added = todoService.addTodo(username,
                 todo.getDescription(),
                 todo.getTargetDate(),
                 todo.isDone());
+
+        return ResponseEntity.created(
+                ServletUriComponentsBuilder.fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(added.getId())
+                        .toUri())
+                .body(added);
     }
 }

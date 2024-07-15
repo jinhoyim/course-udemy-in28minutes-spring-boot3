@@ -1,7 +1,9 @@
 package com.in28minutes.rest.webservices.restfulwebservices.todos;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.net.URI;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.in28minutes.rest.webservices.restfulwebservices.todo.Todo;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -68,13 +71,18 @@ public class TodoHttpRequestTest {
         todo.setTargetDate(LocalDate.of(2025, 2, 5));
         todo.setDone(false);
 
-        Todo actual = this.restTemplate.postForObject(url, todo, Todo.class);
+        ResponseEntity<Todo> response = this.restTemplate.postForEntity(url, todo, Todo.class);
 
         Todo expected = new Todo(4,
                 username,
                 "Learn Full Stack Development",
                 LocalDate.of(2025, 2, 5),
                 false);
-        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
+        assertAll(
+                () -> assertThat(response.getBody()).usingRecursiveComparison().isEqualTo(expected),
+                () -> assertThat(response.getHeaders().getLocation())
+                        .isEqualTo(URI.create("http://localhost:" + port + "/users/in28minutes/todos/4")),
+                () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED)
+        );
     }
 }
