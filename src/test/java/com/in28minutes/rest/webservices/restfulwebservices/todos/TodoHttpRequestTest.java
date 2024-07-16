@@ -6,8 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import java.net.URI;
 import java.time.LocalDate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -22,8 +23,18 @@ public class TodoHttpRequestTest {
     @LocalServerPort
     private int port;
 
-    @Autowired
     private TestRestTemplate restTemplate;
+
+    @Value("${spring.security.user.name}")
+    private String username;
+
+    @Value("${spring.security.user.password}")
+    private String password;
+
+    @BeforeEach
+    void setUp() {
+        restTemplate = new TestRestTemplate(username, password);
+    }
 
     @Test
     void retrieveTodo() {
@@ -46,7 +57,6 @@ public class TodoHttpRequestTest {
 
     @Test
     void updateTodo() {
-        String username = "in28minutes";
         String url = "http://localhost:" + port + "/users/" + username + "/todos/3";
 
         Todo origin = this.restTemplate.getForObject(url, Todo.class);
@@ -64,7 +74,6 @@ public class TodoHttpRequestTest {
 
     @Test
     void addTodo() {
-        String username = "in28minutes";
         String url = "http://localhost:" + port + "/users/" + username + "/todos";
         Todo todo = new Todo();
         todo.setDescription("Learn Full Stack Development");

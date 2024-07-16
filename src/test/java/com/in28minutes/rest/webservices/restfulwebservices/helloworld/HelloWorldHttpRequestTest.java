@@ -1,7 +1,9 @@
 package com.in28minutes.rest.webservices.restfulwebservices.helloworld;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -16,8 +18,18 @@ class HelloWorldHttpRequestTest {
     @LocalServerPort
     private int port;
 
-    @Autowired
     private TestRestTemplate restTemplate;
+
+    @Value("${spring.security.user.name}")
+    private String username;
+
+    @Value("${spring.security.user.password}")
+    private String password;
+
+    @BeforeEach
+    void setUp() {
+        restTemplate = new TestRestTemplate(username, password);
+    }
 
     @Test
     void helloWorld() {
@@ -29,7 +41,7 @@ class HelloWorldHttpRequestTest {
     @Test
     void helloWorldBean() {
         HelloWorldBean actual = this.restTemplate.getForObject("http://localhost:" + port + "/hello-world-bean", HelloWorldBean.class);
-        assertThat(actual).usingRecursiveComparison().isEqualTo(new HelloWorldBean("Hello World"));
+        assertThat(actual).usingRecursiveComparison().isEqualTo(new HelloWorldBean("Hello World Bean"));
     }
 
     // "/hello-world/path-variable/{name}" 에 대해 테스트 코드
