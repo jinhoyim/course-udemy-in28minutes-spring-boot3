@@ -1,13 +1,15 @@
 package com.in28minutes.rest.webservices.restfulwebservices.helloworld;
 
-import org.junit.jupiter.api.BeforeEach;
+import com.in28minutes.rest.webservices.restfulwebservices.TestAuthenticationComponent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -18,43 +20,53 @@ class HelloWorldHttpRequestTest {
     @LocalServerPort
     private int port;
 
+    @Autowired
     private TestRestTemplate restTemplate;
 
-    @Value("${spring.security.user.name}")
+    @Value("${app.jwt.user.name}")
     private String username;
 
-    @Value("${spring.security.user.password}")
+    @Value("${app.jwt.user.password}")
     private String password;
 
-    @BeforeEach
-    void setUp() {
-        restTemplate = new TestRestTemplate(username, password);
-    }
+    @Autowired
+    private TestAuthenticationComponent auth;
 
     @Test
     void helloWorld() {
-        String actual = this.restTemplate.getForObject("http://localhost:" + port + "/hello-world", String.class);
-        assertThat(actual).isEqualTo("Hello World");
+        String url = "http://localhost:" + port + "/hello-world";
+        HttpHeaders headers = auth.getAuthorizationHeaders(port);
+        HttpEntity<Object> entity = new HttpEntity<>(headers);
+
+        var responseEntity = this.restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        assertThat(responseEntity.getBody()).isEqualTo("Hello World");
     }
 
-    // "/hello-world-bean" 에 대해 테스트 코드
     @Test
     void helloWorldBean() {
-        HelloWorldBean actual = this.restTemplate.getForObject("http://localhost:" + port + "/hello-world-bean", HelloWorldBean.class);
-        assertThat(actual).usingRecursiveComparison().isEqualTo(new HelloWorldBean("Hello World Bean"));
+        String url = "http://localhost:" + port + "/hello-world-bean";
+        HttpHeaders headers = auth.getAuthorizationHeaders(port);
+        HttpEntity<Object> entity = new HttpEntity<>(headers);
+
+        var responseEntity = this.restTemplate.exchange(url, HttpMethod.GET, entity, HelloWorldBean.class);
+
+        assertThat(responseEntity.getBody()).usingRecursiveComparison()
+                .isEqualTo(new HelloWorldBean("Hello World Bean"));
     }
 
-    // "/hello-world/path-variable/{name}" 에 대해 테스트 코드
     @Test
     void helloWorldPathVariable() {
-        ResponseEntity<HelloWorldBean> response = this.restTemplate.getForEntity(
-                "http://localhost:" + port + "/hello-world/path-variable/In28Minutes",
-                HelloWorldBean.class);
+        String url = "http://localhost:" + port + "/hello-world/path-variable/In28Minutes";
+        HttpHeaders headers = auth.getAuthorizationHeaders(port);
+        HttpEntity<Object> entity = new HttpEntity<>(headers);
 
-        // assert all
+        var responseEntity = this.restTemplate.exchange(url, HttpMethod.GET, entity, HelloWorldBean.class);
+
         assertAll(
-                () -> assertThat(response.getStatusCode().is2xxSuccessful()).isTrue(),
-                () -> assertThat(response.getBody()).usingRecursiveComparison().isEqualTo(new HelloWorldBean("Hello World, In28Minutes"))
+                () -> assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue(),
+                () -> assertThat(responseEntity.getBody()).usingRecursiveComparison()
+                        .isEqualTo(new HelloWorldBean("Hello World, In28Minutes"))
         );
     }
 }

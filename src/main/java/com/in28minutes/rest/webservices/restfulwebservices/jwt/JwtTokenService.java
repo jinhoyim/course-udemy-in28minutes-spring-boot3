@@ -29,7 +29,7 @@ public class JwtTokenService {
         var claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plus(3, ChronoUnit.MINUTES))
+                .expiresAt(Instant.now().plus(300, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("scope", scope)
                 .build();

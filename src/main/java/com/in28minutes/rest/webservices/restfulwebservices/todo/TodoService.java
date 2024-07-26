@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.in28minutes.rest.webservices.restfulwebservices.NotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,7 +42,7 @@ public class TodoService {
         return todos.stream()
                 .filter(todo -> todo.getId() == id)
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+                .orElseThrow(() -> new NotFoundException("Todo not found"));
     }
 
     public void updateTodo(Todo todo) {
