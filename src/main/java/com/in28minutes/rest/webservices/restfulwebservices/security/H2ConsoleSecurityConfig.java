@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 
 @Configuration
-@Profile("local")
+@Profile("local-h2")
 public class H2ConsoleSecurityConfig {
 
     @Bean

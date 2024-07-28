@@ -1,0 +1,25 @@
+services:
+  mysql8-udemy-todos:
+    image: mysql:8.4.2-oraclelinux9
+    container_name: mysql8-udemy-todos
+    environment:
+      MYSQL_ROOT_PASSWORD: ${IN28MINUTES_DB_PASSWORD}
+      MYSQL_DATABASE: todos
+      MYSQL_USER: ${IN28MINUTES_DB_USER}
+      MYSQL_PASSWORD: ${IN28MINUTES_DB_PASSWORD}
+      TZ: Asia/Seoul
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+      LANG: C.UTF-8
+    ports:
+      - "23301:3306"
+    volumes:
+      - mysql8-udemy-todos-data:/var/lib/mysql
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-time-zone='Asia/Seoul'
+      --lower_case_table_names=1
+
+volumes:
+  mysql8-udemy-todos-data:
