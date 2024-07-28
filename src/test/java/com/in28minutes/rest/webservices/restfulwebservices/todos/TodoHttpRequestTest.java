@@ -9,14 +9,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 
-import java.net.URI;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 public class TodoHttpRequestTest {
     
     @LocalServerPort
@@ -94,16 +95,19 @@ public class TodoHttpRequestTest {
 
         ResponseEntity<Todo> response = this.restTemplate.exchange(url, HttpMethod.POST, entity, Todo.class);
 
-        Todo expected = new Todo(4,
-                username,
-                "Learn Full Stack Development",
-                LocalDate.of(2025, 2, 5),
-                false);
         assertAll(
-                () -> assertThat(response.getBody()).usingRecursiveComparison().isEqualTo(expected),
+                () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED),
                 () -> assertThat(response.getHeaders().getLocation())
-                        .isEqualTo(URI.create("http://localhost:" + port + "/users/in28minutes/todos/4")),
-                () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED)
+                        .isNotNull()
+                        .asString().matches("http://localhost:" + port + "/users/in28minutes/todos/\\d+"),
+                () -> assertThat(response.getBody()).usingRecursiveComparison().ignoringFields("id").isEqualTo(
+                        new Todo(0,
+                                username,
+                                "Learn Full Stack Development",
+                                LocalDate.of(2025, 2, 5),
+                                false)
+                )
         );
     }
 }
+

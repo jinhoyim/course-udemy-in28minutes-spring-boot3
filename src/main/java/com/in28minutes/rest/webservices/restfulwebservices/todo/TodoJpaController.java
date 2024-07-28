@@ -1,32 +1,38 @@
 package com.in28minutes.rest.webservices.restfulwebservices.todo;
 
-import java.util.List;
-
+import com.in28minutes.rest.webservices.restfulwebservices.NotFoundException;
+import com.in28minutes.rest.webservices.restfulwebservices.todo.repository.TodoRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-//@RestController
-public class TodoController {
-    private final TodoService todoService;
+import java.util.List;
 
-    public TodoController(TodoService todoService) {
+@RestController
+public class TodoJpaController {
+    private final TodoService todoService;
+    private final TodoRepository todoRepository;
+
+    public TodoJpaController(TodoService todoService,
+                             TodoRepository todoRepository) {
         this.todoService = todoService;
+        this.todoRepository = todoRepository;
     }
 
     @GetMapping("/users/{username}/todos")
     public List<Todo> retrieveTodos(@PathVariable String username) {
-        return todoService.findByUsername(username);
+        return todoRepository.findByUsername(username);
     }
 
     @GetMapping("/users/{username}/todos/{id}")
     public Todo retrieveTodo(@PathVariable String username, @PathVariable int id) {
-        return todoService.findById(id);
+        return todoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Todo not found"));
     }
 
     @DeleteMapping("/users/{username}/todos/{id}")
     public ResponseEntity<Void> deleteTodo(@PathVariable String username, @PathVariable int id) {
-        todoService.deleteById(id);
+        todoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -34,17 +40,17 @@ public class TodoController {
     public Todo updateTodo(@PathVariable String username,
                                            @PathVariable int id,
                                            @RequestBody Todo todo) {
-        todoService.updateTodo(todo);
+        todoRepository.save(todo);
         return todo;
     }
 
     @PostMapping("/users/{username}/todos")
     public ResponseEntity<Todo> createTodo(@PathVariable String username,
                            @RequestBody Todo todo) {
-        Todo added = todoService.addTodo(username,
-                todo.getDescription(),
-                todo.getTargetDate(),
-                todo.isDone());
+        todo.setId(null);
+        todo.setUsername(username);
+
+        Todo added = todoRepository.save(todo);
 
         return ResponseEntity.created(
                 ServletUriComponentsBuilder.fromCurrentRequest()

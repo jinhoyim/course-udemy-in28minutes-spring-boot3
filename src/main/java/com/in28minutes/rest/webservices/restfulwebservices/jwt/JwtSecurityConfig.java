@@ -6,9 +6,9 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -51,14 +50,15 @@ public class JwtSecurityConfig {
     private String password;
 
     @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(
             HttpSecurity httpSecurity,
             HandlerMappingIntrospector introspector) throws Exception {
 
         return httpSecurity
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(req -> req
                         .requestMatchers("/authenticate").permitAll()
-                        .requestMatchers(PathRequest.toH2Console()).permitAll()
+                        // API를 /api 경로 아래에 두고 /api/** 로 보안 설정하는 것이 더 좋겠다.
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -67,8 +67,6 @@ public class JwtSecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
 // 기본인증은 사용하지 않는다.
 //                .httpBasic(Customizer.withDefaults())
-                .headers(header -> header
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .build();
     }
 
