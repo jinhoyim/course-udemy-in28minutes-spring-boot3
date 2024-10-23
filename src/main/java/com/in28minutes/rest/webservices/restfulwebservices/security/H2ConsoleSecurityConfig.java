@@ -6,11 +6,13 @@ import org.springframework.context.annotation.Profile;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 
+@EnableWebSecurity
 @Configuration
 @Profile("local-h2")
 public class H2ConsoleSecurityConfig {
