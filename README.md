@@ -1,6 +1,7 @@
-실행 방법
+# Udemy Java Spring Boot 3 by in28minutes
+인증 및 API 테스트 참고용 백엔드 실습 일부
+https://www.udemy.com/course/spring-boot-and-spring-framework-korean
 
-# 공통
 ### JWT 계정용 환경변수
 - IN28MINUTES_USERNAME
 - IN28MINUTES_PASSWORD
